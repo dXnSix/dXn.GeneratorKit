@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>Six.GeneratorKit</id>
+        <version>1.0.0-alpha.33</version>
+        <developmentDependency>true</developmentDependency>
+        <authors>Six Technology</authors>
+        <license type="expression">MIT</license>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <projectUrl>https://six.technology</projectUrl>
+        <description>Source only package with helpers for Roslyn Source Generators</description>
+        <tags>roslyn source generator compiletime</tags>
+        <icon>project_icon.png</icon>
+        <readme>README.md</readme>
+
+        <!-- Dependencies are automatically installed when the package is installed -->
+        <dependencies>
+            <dependency id="JetBrains.Annotations" version="2024.3.0" />
+            <dependency id="Microsoft.CodeAnalysis.CSharp" version="4.9.2" />
+            <dependency id="Microsoft.CodeAnalysis.Analyzers" version="3.3.4" />
+            <dependency id="System.Collections.Immutable" version="8.0.0" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="src\*.cs" target="contentFiles\cs\netstandard2.0\SixGeneratorKit" />
+        <file src="src\Collections\*.cs" target="contentFiles\cs\netstandard2.0\SixGeneratorKit\Collections" />
+        <file src="src\Extensions\*.cs" target="contentFiles\cs\netstandard2.0\SixGeneratorKit\Extensions" />
+        <file src="src\Services\*.cs" target="contentFiles\cs\netstandard2.0\SixGeneratorKit\Services" />
+        <file src="src\Helpers\*.cs" target="contentFiles\cs\netstandard2.0\SixGeneratorKit\Helpers" />
+        <file src="README.md" target="" />
+        <file src="package_icon.png" target="images\" />
+
+        <!-- 👇 Hide content files from Visual Studio solution explorer  -->
+        <file src="Six.GeneratorKit.props" target="build/Six.GeneratorKit.props" />
+    </files>
+</package>

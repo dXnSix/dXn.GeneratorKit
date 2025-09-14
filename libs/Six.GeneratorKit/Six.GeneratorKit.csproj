@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <LangVersion>13</LangVersion>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <NoWarn>CS1591;CS0649;CS0169;CA1050;CA1822;CA2211;IDE1006</NoWarn>
+
+        <!-- Company/Organization/Legal Information -->
+        <Authors>Six Technology</Authors>
+        <Company>Six Technology</Company>
+        <Description>Six GeneratorKit is a helper library with various extensions and utilites for working with incremental source generators.</Description>
+        <PackageTags>six;source-generators;generators</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <Copyright>© $([System.DateTime]::Now.Year) Six Technology, Inc. All rights reserved.</Copyright>
+
+        <!-- Repository Information -->
+        <PackageProjectUrl>https://your-project-url.com</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/library-repository-url.com</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+
+        <!-- Embedded Assets -->
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>$(MSBuildThisFileDirectory)\project_icon.png</PackageIcon>
+
+        
+        <NuSpecFile>GeneratorKit.nuspec</NuSpecFile>
+    </PropertyGroup>
+
+    <!-- Conditional Package References for .NET 8.0 -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+        <PackageReference Include="System.Collections.Immutable" Version="8.0.0" />
+    </ItemGroup>
+
+    <!-- Conditional Package References for .NET 9.0 -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+        <PackageReference Include="System.Collections.Immutable" Version="9.0.9" />
+    </ItemGroup>
+
+    <!-- Conditional Package References for .NET 10.0 -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+        <PackageReference Include="System.Collections.Immutable" Version="10.0.0-rc.1.25451.107" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations" Version="2025.2.2"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\"/>
+        <None Include="project_icon.png" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+
+</Project>

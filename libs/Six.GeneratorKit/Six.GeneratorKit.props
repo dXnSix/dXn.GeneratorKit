@@ -1,0 +1,12 @@
+<Project>
+    <!--
+      Hide content files from Visual Studio solution explorer. Adapted from:
+     -->
+    <ItemGroup>
+        <Compile Update="@(Compile)">
+            <Visible
+                Condition="'%(NuGetItemType)' == 'Compile' and '%(NuGetPackageId)' == 'Six.GeneratorKit'">
+                false</Visible>
+        </Compile>
+    </ItemGroup>
+</Project>

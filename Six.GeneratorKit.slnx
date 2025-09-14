@@ -1,0 +1,11 @@
+﻿<Solution>
+  <Folder Name="/Libs/">
+    <Project Path="libs\Six.GeneratorKit\Six.GeneratorKit.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/_config/">
+    <File Path="global.json" />
+    <File Path="README.md" />
+    <File Path="setup.cs" />
+    <File Path="docs\astro.config.mjs" />
+  </Folder>
+</Solution>

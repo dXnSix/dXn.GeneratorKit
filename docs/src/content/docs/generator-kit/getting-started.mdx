@@ -1,0 +1,348 @@
+---
+title: Getting Started
+description: Learn how to set up and use Six.GeneratorKit in your source generator projects
+---
+
+# Getting Started with Six.GeneratorKit
+
+This guide will walk you through setting up Six.GeneratorKit and creating your first source generator using the library's powerful utilities.
+
+## Installation
+
+Six.GeneratorKit is distributed as a NuGet package that includes source files directly in your project. This approach ensures no runtime dependencies and optimal performance.
+
+### Install the Package
+
+Add Six.GeneratorKit to your source generator project:
+
+```xml
+<PackageReference Include="Six.GeneratorKit" Version="1.0.0-alpha.33" />
+```
+
+Or using the .NET CLI:
+
+```bash
+dotnet add package Six.GeneratorKit
+```
+
+### Project Setup
+
+Your source generator project should target .NET Standard 2.0 and include the necessary Roslyn packages:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>13</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+    <PackageReference Include="Six.GeneratorKit" Version="1.0.0-alpha.33" />
+  </ItemGroup>
+</Project>
+```
+
+## Your First Source Generator
+
+Let's create a simple source generator that generates ToString methods for classes marked with a custom attribute.
+
+### Step 1: Define the Attribute
+
+First, create the attribute that users will apply to their classes:
+
+```csharp
+using System;
+
+namespace MyGenerator
+{
+    [AttributeUsage(AttributeTargets.Class)]
+    public class GenerateToStringAttribute : Attribute
+    {
+        public bool IncludeFields { get; set; } = false;
+        public string? Format { get; set; }
+    }
+}
+```
+
+### Step 2: Create the Source Generator
+
+Now create your source generator using Six.GeneratorKit:
+
+```csharp
+using System.Collections.Immutable;
+using System.Linq;
+using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Six.GeneratorKit;
+
+[Generator]
+public class ToStringGenerator : IIncrementalGenerator
+{
+    public void Initialize(IncrementalGeneratorInitializationContext context)
+    {
+        // Find all classes with the GenerateToString attribute
+        var classDeclarations = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                "MyGenerator.GenerateToStringAttribute",
+                predicate: static (node, _) => node is ClassDeclarationSyntax,
+                transform: static (ctx, _) => GetClassInfo(ctx))
+            .Where(static m => m is not null);
+
+        // Generate source for each class
+        context.RegisterSourceOutput(classDeclarations, 
+            static (spc, source) => Execute(source, spc));
+    }
+
+    private static ClassInfo? GetClassInfo(GeneratorAttributeSyntaxContext context)
+    {
+        if (context.TargetNode is not ClassDeclarationSyntax classDeclaration)
+            return null;
+
+        if (context.TargetSymbol is not INamedTypeSymbol classSymbol)
+            return null;
+
+        var attribute = context.Attributes[0];
+        
+        // Use Six.GeneratorKit extensions for easy attribute access
+        var includeFields = attribute.GetNamedArgument<bool>("IncludeFields", false);
+        var format = attribute.GetNamedArgument("Format", "default");
+
+        return new ClassInfo(
+            classSymbol.Name,
+            classSymbol.GetNamespace(),
+            classSymbol.GetFormattedAccessModifier(),
+            includeFields,
+            format,
+            GetMembers(classSymbol, includeFields)
+        );
+    }
+
+    private static EquatableArray<MemberInfo> GetMembers(INamedTypeSymbol classSymbol, bool includeFields)
+    {
+        using var builder = ImmutableArrayBuilder<MemberInfo>.Rent();
+
+        // Get all public properties
+        foreach (var member in classSymbol.GetMembers().OfType<IPropertySymbol>())
+        {
+            if (member.DeclaredAccessibility == Accessibility.Public && 
+                member.GetMethod is not null)
+            {
+                builder.Add(new MemberInfo(member.Name, member.Type.Name, false));
+            }
+        }
+
+        // Get public fields if requested
+        if (includeFields)
+        {
+            foreach (var member in classSymbol.GetMembers().OfType<IFieldSymbol>())
+            {
+                if (member.DeclaredAccessibility == Accessibility.Public)
+                {
+                    builder.Add(new MemberInfo(member.Name, member.Type.Name, true));
+                }
+            }
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static void Execute(ClassInfo? classInfo, SourceProductionContext context)
+    {
+        if (classInfo is null) return;
+
+        try
+        {
+            var source = GenerateToStringMethod(classInfo);
+            var fileName = $"{classInfo.Name}.ToString.g.cs";
+            
+            // Use Six.GeneratorKit helper for consistent file headers
+            var header = CodeHeaderHelpers.GetGeneratedCodeHeader("ToStringGenerator");
+            var fullSource = $"{header}\n{source}";
+            
+            context.AddSource(fileName, fullSource);
+        }
+        catch (System.Exception ex)
+        {
+            // Use GeneratorService for error handling
+            GeneratorService.Add(
+                DiagnosticDescriptors.GenerationError, 
+                Location.None);
+        }
+    }
+
+    private static string GenerateToStringMethod(ClassInfo classInfo)
+    {
+        var sb = new StringBuilder();
+        
+        if (!string.IsNullOrEmpty(classInfo.Namespace))
+        {
+            sb.AppendLine($"namespace {classInfo.Namespace};");
+            sb.AppendLine();
+        }
+
+        sb.AppendLine($"{classInfo.AccessModifier} partial class {classInfo.Name}");
+        sb.AppendLine("{");
+        sb.AppendLine("    public override string ToString()");
+        sb.AppendLine("    {");
+        
+        if (classInfo.Members.IsEmpty)
+        {
+            sb.AppendLine($"        return \"{classInfo.Name}\";");
+        }
+        else
+        {
+            sb.AppendLine("        return $\"" + classInfo.Name + " { ");
+            
+            for (int i = 0; i < classInfo.Members.Count; i++)
+            {
+                var member = classInfo.Members[i];
+                sb.Append($"{member.Name} = {{{member.Name}}}");
+                
+                if (i < classInfo.Members.Count - 1)
+                    sb.Append(", ");
+            }
+            
+            sb.AppendLine(" }\";");
+        }
+        
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+        
+        return sb.ToString();
+    }
+}
+
+// Data models using Six.GeneratorKit collections
+public record ClassInfo(
+    string Name,
+    string Namespace,
+    string AccessModifier,
+    bool IncludeFields,
+    string Format,
+    EquatableArray<MemberInfo> Members);
+
+public record MemberInfo(string Name, string Type, bool IsField);
+
+// Diagnostic descriptors
+public static class DiagnosticDescriptors
+{
+    public static readonly DiagnosticDescriptor GenerationError = new(
+        id: "TSG001",
+        title: "ToString generation error",
+        messageFormat: "An error occurred while generating ToString method: {0}",
+        category: "ToStringGenerator",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+}
+```
+
+### Step 3: Using the Generator
+
+In your target project, reference the generator and use the attribute:
+
+```csharp
+[GenerateToString(IncludeFields = true)]
+public partial class Person
+{
+    public string FirstName { get; set; } = "";
+    public string LastName { get; set; } = "";
+    public int Age { get; set; }
+    public string Email;
+}
+```
+
+The generator will produce:
+
+```csharp
+// <auto-generated/>
+// This file was generated by ToStringGenerator
+
+namespace YourNamespace;
+
+public partial class Person
+{
+    public override string ToString()
+    {
+        return $"Person { FirstName = {FirstName}, LastName = {LastName}, Age = {Age}, Email = {Email} }";
+    }
+}
+```
+
+## Key Six.GeneratorKit Features Used
+
+This example demonstrates several key features of Six.GeneratorKit:
+
+### 1. **Attribute Extensions**
+```csharp
+var includeFields = attribute.GetNamedArgument<bool>("IncludeFields", false);
+var format = attribute.GetNamedArgument("Format", "default");
+```
+
+### 2. **Symbol Extensions**
+```csharp
+classSymbol.GetNamespace()
+classSymbol.GetFormattedAccessModifier()
+```
+
+### 3. **Equatable Collections**
+```csharp
+EquatableArray<MemberInfo> Members  // Provides value equality for incremental generation
+```
+
+### 4. **Efficient Builders**
+```csharp
+using var builder = ImmutableArrayBuilder<MemberInfo>.Rent();
+// ... add items
+return builder.ToImmutable();
+```
+
+### 5. **Code Generation Helpers**
+```csharp
+var header = CodeHeaderHelpers.GetGeneratedCodeHeader("ToStringGenerator");
+```
+
+### 6. **Error Handling**
+```csharp
+GeneratorService.Add(DiagnosticDescriptors.GenerationError, Location.None);
+```
+
+## Best Practices
+
+### 1. **Use Equatable Collections**
+Always use `EquatableArray<T>` for collections in your data models to ensure proper incremental generation behavior.
+
+### 2. **Leverage Symbol Extensions**
+Use the rich symbol extensions provided by Six.GeneratorKit to simplify code analysis tasks.
+
+### 3. **Handle Errors Gracefully**
+Use `GeneratorService` to collect and report errors consistently.
+
+### 4. **Use Efficient Builders**
+Use `ImmutableArrayBuilder<T>.Rent()` for building collections efficiently with pooled memory.
+
+### 5. **Generate Consistent Headers**
+Use `CodeHeaderHelpers` to generate consistent file headers for all generated code.
+
+## Next Steps
+
+Now that you've created your first generator with Six.GeneratorKit, explore:
+
+- [API Reference](/generator-kit/api-reference) - Complete API documentation
+- [Examples](/generator-kit/examples) - More complex real-world examples
+- [Advanced Topics](/generator-kit/advanced) - Performance optimization and advanced patterns
+
+## Common Issues
+
+### Generator Not Running
+Ensure your generator project targets .NET Standard 2.0 and includes the proper analyzer references.
+
+### Missing Extensions
+Make sure you have the proper `using Six.GeneratorKit;` statement to access extension methods.
+
+### Performance Issues
+Use `EquatableArray<T>` for all collections in your data models to ensure efficient incremental generation.
