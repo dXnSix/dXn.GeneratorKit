@@ -5,7 +5,5 @@
   <Folder Name="/_config/">
     <File Path="global.json" />
     <File Path="README.md" />
-    <File Path="setup.cs" />
-    <File Path="docs\astro.config.mjs" />
   </Folder>
 </Solution>

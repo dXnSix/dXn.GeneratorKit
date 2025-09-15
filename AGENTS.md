@@ -1,23 +1,88 @@
 # AGENTS.md
 
-A comprehensive guide for AI coding agents working with the **Six.SolutionTemplate** repository. This template provides
-the context and instructions needed to help AI agents work effectively on .NET C# projects using this template.
+A comprehensive guide for AI coding agents working with the **Six.GeneratorKit** repository. This library provides
+essential utilities and helpers for building robust Roslyn source generators in .NET C# projects.
+
+## 📦 Six.GeneratorKit Library Overview
+
+**Six.GeneratorKit** is a source-only NuGet package that provides a comprehensive set of utilities, extensions, and helpers specifically designed for building incremental source generators with Roslyn. The library targets .NET Standard 2.0 for maximum compatibility and includes content files that are embedded directly into consuming projects.
+
+### 🎯 Purpose and Goals
+
+- **Simplify Source Generator Development**: Provides common patterns and utilities to reduce boilerplate code
+- **Enhance Performance**: Includes optimized collections and caching mechanisms for generator efficiency  
+- **Improve Developer Experience**: Offers helpful extensions and services for common generator tasks
+- **Ensure Compatibility**: Targets .NET Standard 2.0 with support for .NET 8, 9, and 10
+- **Production Ready**: Built with nullable reference types, comprehensive error handling, and robust APIs
+
+### 🔧 Key Components
+
+#### **Collections**
+- **`EquatableArray<T>`**: Immutable array with value equality support for efficient generator caching
+- **`ImmutableArrayBuilder<T>`**: High-performance builder for constructing immutable arrays with pooled buffers
+- **`HashCode`**: Utilities for generating consistent hash codes across different scenarios
+
+#### **Extensions**
+- **Symbol Extensions**: Rich extension methods for `ITypeSymbol`, `INamedTypeSymbol`, `IPropertySymbol`
+- **Attribute Extensions**: Simplified attribute data access and validation
+- **Context Extensions**: Enhanced `SourceProductionContext` with better source file handling
+- **Provider Extensions**: Utilities for working with `IncrementalValuesProvider<T>`
+
+#### **Services**
+- **`GeneratorService`**: Centralized error collection and reporting for generator diagnostics
+- **`ExternalInit`**: Support for init-only properties in older target frameworks
+
+#### **Helpers**
+- **`NameHelpers`**: Attribute name sanitization, namespace removal, and naming conventions
+- **`CodeHeaderHelpers`**: Standardized code header generation with copyright and tool information
+- **`DocumentationHelpers`**: XML documentation comment generation and formatting
+- **`FormattingHelpers`**: Code formatting and indentation utilities
+
+### 📋 Package Configuration
+
+- **Package Type**: Source-only NuGet package (development dependency)
+- **Target Framework**: .NET Standard 2.0
+- **Language Version**: C# 13 with nullable reference types enabled
+- **Distribution**: Content files embedded in consuming projects under `SixGeneratorKit` namespace
+- **Dependencies**: Microsoft.CodeAnalysis.CSharp, JetBrains.Annotations, System.Collections.Immutable
+
+### 🚀 Usage Guidelines
+
+#### **Installation**
+```xml
+<PackageReference Include="Six.GeneratorKit" Version="1.0.0-alpha.33" PrivateAssets="all" />
+```
+
+#### **Key Features for Generators**
+- Use `EquatableArray<T>` for generator model properties to enable proper incremental compilation caching
+- Leverage `GeneratorService` for centralized error collection and reporting
+- Utilize symbol extensions for simplified syntax tree analysis
+- Apply name helpers for consistent attribute and type name handling
+
+#### **Best Practices**
+- Always use `EquatableArray<T>` instead of `ImmutableArray<T>` in generator models
+- Collect all errors using `GeneratorService` and report them at the end of generation
+- Use `ImmutableArrayBuilder<T>` for efficient collection building in hot paths
+- Leverage extension methods for cleaner, more readable generator code
+
+### 🔍 Integration Notes
+
+This library is specifically designed for source generator projects and provides the foundational utilities needed for building robust, performant, and maintainable generators. All types are marked with appropriate attributes for code coverage exclusion and public API documentation.
 
 ## 🏗️ Project Overview
 
-**Six.SolutionTemplate** is a GitHub template repository for creating .NET C# projects with professional tooling,
-automated workflows, and professional documentation setup. It's designed for building libraries and applications with
-minimal configuration overhead.
+**Six.GeneratorKit** is a specialized .NET library project focused on providing utilities for Roslyn source generator development. The project follows professional development practices with automated tooling, comprehensive testing, and standardized packaging for NuGet distribution.
 
 ### Key Components
 
-- **Application Projects**: Located in `apps/` directory
-- **Library Projects**: Located in `libs/` directory
-- **Test Projects**: Located in `tests/` directory
-- **Benchmark Projects**: Located in `benchmarks/` directory
+- **Library Project**: Six.GeneratorKit located in `libs/Six.GeneratorKit/` directory
+  - **Source Code**: Core utilities in `src/` with organized subdirectories:
+    - `Collections/`: Specialized collection types for generators
+    - `Extensions/`: Extension methods for Roslyn symbols and contexts
+    - `Helpers/`: Utility classes for common generator tasks
+    - `Services/`: Core services like error reporting and initialization
 - **Build Scripts**: **C# file-based apps** in `scripts/` directory (requires .NET 10)
-- **Documentation**: Astro.js Starlight site in `docs/` directory
-- **CI/CD**: GitHub Actions workflows in `.github/workflows/`
+- **Configuration**: Project configuration files for versioning, packaging, and code quality
 
 ## 🚀 Setup Commands
 
@@ -30,60 +95,6 @@ minimal configuration overhead.
 - **Docker**: For containerized testing (optional but recommended)
 
 
-### Initial Setup
-
-```bash
-# Run the comprehensive setup script (RECOMMENDED)
-# This will check prerequisites, restore packages, install docs dependencies,
-# and guide you through configuration
-dotnet run setup.cs
-```
-
-### Development Commands
-
-```bash
-# Build the solution
-dotnet build
-
-# Run all tests
-dotnet run scripts/tests-run.cs
-
-# Run tests with coverage
-dotnet run scripts/tests-coverage.cs
-
-# Generate coverage reports
-dotnet run scripts/tests-report.cs
-
-# Package and publish NuGet packages
-dotnet run scripts/nuget-pack.cs --prod
-```
-
-### Setup Script Details
-
-The `setup.cs` script is a comprehensive setup and configuration tool that automates the initial project setup:
-
-**What it does:**
-- ✅ Checks prerequisites (dotnet CLI, pnpm/npm)
-- ✅ Restores .NET packages automatically
-- ✅ Installs documentation dependencies
-- ✅ Guides you through NuGet package configuration (GitHub repository URL, description, company, authors, tags, copyright)
-- ✅ Updates configuration files (`libs/Directory.Build.props`, `docs/astro.config.mjs`)
-- ✅ Provides clear next steps and summary
-
-**Configuration Options:**
-- GitHub Repository URL
-- Package description and metadata
-- Company and author information
-- Package tags and copyright
-- Documentation site configuration (GitHub Pages URL, title)
-
-**Benefits:**
-- Streamlined onboarding process
-- Consistent configuration across team members
-- Automatic detection of project structure
-- Interactive prompts with sensible defaults
-- Comprehensive error handling and validation
-
 ## 🧪 Testing Instructions
 
 ### Running Tests
@@ -91,18 +102,17 @@ The `setup.cs` script is a comprehensive setup and configuration tool that autom
 - **All Tests**: `dotnet run scripts/tests-run.cs`
 - **With Coverage**: `dotnet run scripts/tests-coverage.cs`
 - **Coverage Reports**: `dotnet run scripts/tests-report.cs`
-- **Specific Test Project**: Navigate to `tests/` directory and run `dotnet test`
 
 ### Test Structure
 
-- Test projects are located in `tests/` directory
-- Each test project references corresponding library projects
-- Tests use `xUnit` framework with coverlet for coverage
+- This library focuses on source generator utilities
+- Testing is primarily done through integration with actual generator projects
+- The library includes comprehensive code coverage exclusions for generator-specific code
 
 ### Coverage Requirements
 
 - Generate coverage reports before committing
-- Ensure all new code has corresponding tests
+- Ensure all new utilities have corresponding integration tests
 - Coverage reports are automatically generated in CI/CD
 
 ## 🔧 Build and Development
@@ -110,14 +120,18 @@ The `setup.cs` script is a comprehensive setup and configuration tool that autom
 ### Project Structure
 
 ```
-Six.SolutionTemplate/
-├── apps/                    # Application projects (console, web applications, Avalonia etc.)
-├── libs/                    # Library projects 
-├── tests/                   # Test projects
-├── benchmarks/              # Benchmarking projects    
-├── scripts/                 # C# build scripts
-├── docs/                    # Documentation site
-└── .github/workflows/       # CI/CD pipelines
+Six.GeneratorKit/
+├── libs/Six.GeneratorKit/   # Main library project
+│   ├── src/                 # Source code organized by functionality
+│   │   ├── Collections/     # EquatableArray, ImmutableArrayBuilder, HashCode
+│   │   ├── Extensions/      # Symbol, Context, and Provider extensions
+│   │   ├── Helpers/         # Name, Code, Documentation, and Formatting helpers
+│   │   └── Services/        # GeneratorService, ExternalInit
+│   ├── bin/                 # Build outputs
+│   ├── obj/                 # Build intermediates
+│   └── *.csproj            # Project configuration
+├── scripts/                 # C# build scripts for packaging and testing
+└── *.json, *.yml           # Configuration files (global.json, GitVersion.yml, etc.)
 ```
 
 ### Build Scripts
@@ -173,11 +187,6 @@ The template includes several configuration files that ensure consistent develop
 - Supports different deployment environments
 - Comprehensive documentation in comments for setup
 
-**`libs/Directory.Build.props`** - Library-Specific Configuration
-- NuGet packaging settings for library projects
-- SourceLink configuration for debugging support
-- Package metadata and repository information
-- License and copyright configuration
 
 ## 📦 NuGet Packaging
 
@@ -227,101 +236,11 @@ dotnet run scripts/nuget-pack.cs --production
 dotnet run scripts/nuget-pack.cs --debug --local
 ```
 
-### Package Configuration
-
-- Package metadata is centralized in `Directory.Build.props`
-- Individual projects can override specific settings
-- GitVersion handles semantic versioning automatically
-- SourceLink is configured for debugging support
-
-## 📚 Documentation
-
-### Documentation Site
-
-- Built with Astro.js Starlight using **Six** theme
-- Located in `docs/` directory
-- Automatically deployed to GitHub Pages on push to main
-- Supports Markdown and MDX content
-
-### Documentation Commands
-
-```bash
-# Start development server
-cd docs
-npm run dev
-
-# Build documentation
-npm run build
-
-# Preview built site
-npm run preview
-```
-
-### Content Structure
-
-The documentation site includes comprehensive guides covering:
-
-**📚 Core Documentation**
-- **Getting Started**: Introduction and setup guides
-- **Setup and Configuration**: Installation and configuration details
-- **Running Tests**: Testing workflows and coverage reporting
-- **NuGet Packaging**: Package creation and publishing
-- **Creating Documentation**: Documentation site customization
-- **GitHub Workflows**: CI/CD pipeline configuration
-
-**🤖 AI Integration Guides**
-- **Agents Markdown**: Working with AI coding agents
-- **Cursor Integration**: IDE integration and specialized rules
-  - Cursor introduction and setup
-  - Documentation rules for AI assistance
-  - .NET/C# development rules
-  - Web development rules
-- **Kiro Integration**: Advanced AI steering and hooks
-  - Kiro introduction and setup
-  - Documentation steering
-  - .NET development steering
-  - Web development steering
-
-**🔧 Advanced Topics**
-- **NuGet Feeds**: Feed configuration and management
-  - NuGet feeds setup and usage
-  - Security and authentication (secrets management)
-- **Project Documentation**: Comprehensive documentation strategies
-  - Creating effective documentation
-  - Setting up documentation sites
-  - Using documentation with AI tools
-- **Scripts Documentation**: Build script usage and customization
-  - Test scripts (run, coverage, report)
-  - NuGet packaging scripts
-  - Setup and configuration scripts
-- **GitHub Workflow Integration**: CI/CD pipeline documentation
-  - Documentation deployment workflows
-  - Test workflow integration
-
-**🏗️ Project Structure**
-- **Directory Structure**: Understanding the project layout
-- **Configuration**: Detailed configuration guides
-- **Best Practices**: Development and deployment patterns
-
-## 🔄 CI/CD and Automation
-
-### GitHub Actions Workflows
-
-- **PR Testing**: `pr-test.yml` - Runs on pull requests
-- **GitHub Pages**: `deploy-gh-pages.yml` - Deploys documentation
-
-### Automated Processes
-
-- Tests run automatically on pull requests
-- Documentation deploys automatically on main branch pushes
-- Dependabot updates dependencies weekly
-- Code quality checks run in CI pipeline
-
 ### Environment Requirements
 
-- .NET 10 SDK in CI environment
-- Docker is available for containerized testing
-- Proper permissions for GitHub Pages deployment
+- .NET 10 SDK in CI environment for build scripts
+- .NET Standard 2.0 compatibility for library builds
+- NuGet publishing credentials for package distribution
 
 ## 🎨 Code Style and Standards
 
@@ -329,9 +248,9 @@ The documentation site includes comprehensive guides covering:
 
 - **C# 13**: Latest language version with preview features enabled
 - **Nullable Reference Types**: Enabled by default for type safety
-- **Implicit Usings**: Enabled for cleaner, more concise code
-- **Target Frameworks**: Projects target .NET 9.0; build scripts require .NET 10.0.100-rc.1+
-- **Source Generators**: Support for compile-time code generation
+- **Implicit Usings**: Disabled for explicit control in generator contexts
+- **Target Framework**: .NET Standard 2.0 for maximum compatibility; build scripts require .NET 10
+- **Unsafe Code**: Enabled for high-performance collection operations
 
 ### Code Quality Tools
 
@@ -340,28 +259,6 @@ The documentation site includes comprehensive guides covering:
 - **Code Analysis**: Built-in rule sets and analysis
 - **Treat Warnings as Errors**: High quality standards
 
-### Style Guidelines
-
-- Follow C# coding conventions
-- Use meaningful names for variables and methods
-- Include XML documentation for public APIs
-- Ensure proper error handling and validation
-
-## 🚨 Security and Best Practices
-
-### Package Security
-
-- Use environment variables for sensitive configuration
-- Never commit API keys or access tokens
-- Validate all inputs and handle errors gracefully
-- Follow secure coding practices
-
-### Testing Security
-
-- Run tests in isolated environments
-- Use containerized testing when possible
-- Validate security-related functionality
-- Test error conditions and edge cases
 
 ## 📝 Commit and PR Guidelines
 
@@ -406,43 +303,10 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 - Run `dotnet build` to ensure solution builds
 - Run `dotnet run scripts/tests-run.cs` to verify tests pass
 - Check code coverage with `dotnet run scripts/tests-coverage.cs`
-- Verify documentation builds correctly (`cd docs && npm run build`)
+- Validate NuGet package builds correctly (`dotnet run scripts/nuget-pack.cs --local`)
 - Ensure no sensitive information is included in commits
 
-## 🔍 Troubleshooting
 
-### Common Issues
-
-- **Setup Script Issues**: Ensure .NET 10.0.100-rc.1+ is installed and PATH is configured
-- **Build Failures**: Check .NET version compatibility (projects: .NET 9.0, scripts: .NET 10.0+)
-- **Test Failures**: Verify Docker is running for containerized tests
-- **Package Issues**: Check environment variable configuration in nuget.config
-- **Documentation Build**: Ensure Node.js dependencies are installed (`cd docs && npm install`)
-- **Configuration Errors**: Run `dotnet run setup.cs` to regenerate configuration files
-
-### Getting Help
-
-- Check existing documentation in `docs/` directory
-- Review GitHub Actions logs for CI/CD issues
-- Consult project issues and discussions
-- Refer to .NET and tooling documentation
-
-## 📚 Additional Resources
-
-### Official Documentation
-
-- [.NET Documentation](https://docs.microsoft.com/en-us/dotnet/)
-- [NuGet Documentation](https://docs.microsoft.com/en-us/nuget/)
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [Astro.js Starlight Documentation](https://starlight.astro.build/)
-
-### Project-Specific Resources
-
-- [Six.SolutionTemplate Documentation](https://six-tech.github.io/Six.SolutionTemplate)
-- [GitHub Repository](https://github.com/six-tech/Six.SolutionTemplate)
-
----
-
-**Note**: This AGENTS.md file is designed to help AI coding agents work effectively with the Six.SolutionTemplate
-repository. It provides comprehensive guidance for development, testing, packaging, and documentation tasks while
-maintaining the high-quality standards expected in enterprise .NET development.
+**Note**: This AGENTS.md file is designed to help AI coding agents work effectively with the Six.GeneratorKit
+library. It provides comprehensive guidance for understanding, developing, testing, and packaging source generator utilities while
+maintaining the high-quality standards expected in enterprise .NET development and Roslyn source generator ecosystems.
