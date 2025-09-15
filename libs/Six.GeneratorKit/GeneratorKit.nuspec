@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>Six.GeneratorKit</id>
-        <version>1.0.0-alpha.33</version>
+        <version>1.0.0-alpha.34</version>
         <developmentDependency>true</developmentDependency>
         <authors>Six Technology</authors>
         <license type="expression">MIT</license>
@@ -15,10 +15,10 @@
 
         <!-- Dependencies are automatically installed when the package is installed -->
         <dependencies>
-            <dependency id="JetBrains.Annotations" version="2024.3.0" />
+            <dependency id="JetBrains.Annotations" version="2025.2.2" />
             <dependency id="Microsoft.CodeAnalysis.CSharp" version="4.9.2" />
             <dependency id="Microsoft.CodeAnalysis.Analyzers" version="3.3.4" />
-            <dependency id="System.Collections.Immutable" version="8.0.0" />
+            <dependency id="System.Collections.Immutable" version="9.0.9" />
         </dependencies>
     </metadata>
     <files>
@@ -28,7 +28,7 @@
         <file src="src\Services\*.cs" target="contentFiles\cs\netstandard2.0\SixGeneratorKit\Services" />
         <file src="src\Helpers\*.cs" target="contentFiles\cs\netstandard2.0\SixGeneratorKit\Helpers" />
         <file src="README.md" target="" />
-        <file src="package_icon.png" target="images\" />
+        <file src="project_icon.png" target="\" />
 
         <!-- 👇 Hide content files from Visual Studio solution explorer  -->
         <file src="Six.GeneratorKit.props" target="build/Six.GeneratorKit.props" />

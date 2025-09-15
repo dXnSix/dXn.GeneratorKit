@@ -11,7 +11,7 @@
         <!-- Company/Organization/Legal Information -->
         <Authors>Six Technology</Authors>
         <Company>Six Technology</Company>
-        <Description>Six GeneratorKit is a helper library with various extensions and utilites for working with incremental source generators.</Description>
+        <Description>Six GeneratorKit is a ource only helper package with various extensions and utilites for working with incremental source generators.</Description>
         <PackageTags>six;source-generators;generators</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
